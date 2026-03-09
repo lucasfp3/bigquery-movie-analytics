@@ -1,86 +1,224 @@
-# Movie Recommendation Analytics (BigQuery + Metabase)
+🎬 MovieLens Analytics Pipeline (BigQuery)
 
-This project implements an end-to-end analytics pipeline to analyze a movie recommendation dataset using Google Cloud and SQL.
+End-to-end data analytics pipeline built using the MovieLens Beliefs Dataset, ingesting raw CSV data into Google Cloud Storage, transforming it with BigQuery SQL, and producing analytical tables for recommendation system exploration.
 
-## Stack
+The project demonstrates how to design a modern analytics pipeline including raw ingestion, transformation, validation, exploratory analysis and KPI generation.
 
-- Google Cloud Storage
-- BigQuery
-- SQL (BigQuery SQL)
-- Metabase
-- Docker
+📊 Dataset
 
-## Architecture
+This project uses the MovieLens Beliefs Dataset, released by the GroupLens Research Group (University of Minnesota).
 
-CSV files are stored in Google Cloud Storage and accessed through external tables in BigQuery.  
-The pipeline separates the **raw layer** from the **analytics layer**.
+The dataset contains:
 
-## Data Layers
+user ratings
 
-### RAW
+recommendation system predictions
 
-External tables created directly on top of CSV files.
+belief elicitation data (expected ratings for unseen movies)
 
-All fields are ingested as **STRING** to ensure ingestion stability.
+Users are anonymized and represented only by userId.
 
-Tables:
+Source:
+http://grouplens.org/datasets/
 
-- raw_movies
-- raw_belief_data
-- raw_movie_elicitation
-- raw_ratings_additional
-- raw_user_rating_history
-- raw_user_recommendation_history
+Citation:
 
-### Analytics
+Aridor, G., Goncalves, D., Kong, R., Culver, D., Konstan, J. (2024)
+The MovieLens Beliefs Dataset: Collecting Pre-Choice Data for Online Recommender Systems.
 
-Curated tables used for analysis.
+🏗 Architecture
 
-Tables:
+The pipeline follows a raw → analytics transformation model.
 
-- dim_movies
-- fact_ratings
-- fact_recommendations
+CSV Dataset
+    │
+    ▼
+Google Cloud Storage
+    │
+    ▼
+BigQuery RAW Layer
+    │
+    ▼
+BigQuery Analytics Layer
+    │
+    ├── dim_movies
+    ├── fact_ratings
+    └── fact_recommendations
+    │
+    ▼
+SQL Analysis
 
-## Data Cleaning
+Raw CSV files are ingested as external tables, then transformed into typed analytical tables.
 
-Key transformations include:
+📂 Project Structure
+bigquery-movie-analytics
+│
+├── SQL
+│   ├── Raw
+│   │   ├── create_raw_belief_data.sql
+│   │   ├── create_raw_movie_elicitation.sql
+│   │   ├── create_raw_movies.sql
+│   │   ├── create_raw_ratings_additional.sql
+│   │   ├── create_raw_user_rating_history.sql
+│   │   └── create_raw_user_recommendation_history.sql
+│   │
+│   └── Analytics
+│       ├── create_dim_movies.sql
+│       ├── create_fact_ratings.sql
+│       └── create_fact_recommendations.sql
+│
+├── Analyses
+│   ├── exploratory_validation.sql
+│   ├── exploratory_analysis.sql
+│   └── kpis_queries.sql
+│
+├── Docs
+│   └── insights.md
+│
+├── Images
+│
+├── data_release
+│   └── README.txt
+│
+├── .gitignore
+└── README.md
 
-- Casting raw fields using SAFE_CAST
-- Removing invalid ratings (NA)
-- Extracting release year from movie title
-- Cleaning escaped quotes in movie titles
+Large CSV files are excluded from the repository due to GitHub size limits.
 
-## Example Analysis
+🧱 Data Model
 
-Top rated movies with at least 100 ratings:
+The analytics layer uses a star schema.
 
-| Movie | Avg Rating |
-|------|-----------|
-| Shawshank Redemption | 4.2 |
-| Parasite | 4.14 |
-| Fight Club | 4.13 |
-| Pulp Fiction | 4.13 |
+Dimension
 
-## Next Steps
+dim_movies
 
-- Build dashboards in Metabase
-- Analyze genre popularity
-- Compare predicted ratings vs real ratings
-<<<<<<< HEAD
-- User behavior analysis
-=======
-- User behavior analysis
->>>>>>> 03b85a54afdc086150c428355bca2d6d437202a9
+column	description
+movie_id	unique movie identifier
+titulo	movie title
+generos	genre list
+ano_lancamento	release year
+Fact Tables
 
-Raw dataset files were used locally and stored in Google Cloud Storage for ingestion into BigQuery.
+fact_ratings
 
-Large CSV files are not included in this repository due to GitHub file size limits.
+Contains historical user ratings.
 
-Files used in the project:
-- belief_data.csv
-- movie_elicitation_set.csv
-- movies.csv
-- ratings_for_additional_users.csv
-- user_rating_history.csv
-- user_recommendation_history.csv
+column	description
+user_id	user identifier
+movie_id	movie identifier
+rating	rating value
+rating_timestamp	rating timestamp
+
+fact_recommendations
+
+Contains recommendation system predictions.
+
+column	description
+user_id	user identifier
+movie_id	movie identifier
+predicted_rating	predicted rating
+recommendation_timestamp	timestamp of recommendation
+🔎 Data Validation
+
+Validation queries ensure data consistency:
+
+null checks
+
+dataset size validation
+
+foreign key validation between facts and dimensions
+
+Example finding:
+
+ratings without corresponding movie in dim_movies: 30,600
+
+This indicates potential inconsistencies between the ratings dataset and the movie catalog.
+
+📈 Exploratory Analysis
+
+The project includes exploratory queries such as:
+
+rating distribution
+
+most rated movies
+
+highest average rated movies
+
+recommendation frequency analysis
+
+predicted rating distribution
+
+Example query:
+
+SELECT
+  d.titulo,
+  COUNT(*) AS qtd_avaliacoes,
+  ROUND(AVG(f.rating), 2) AS media_rating
+FROM analytics.fact_ratings f
+LEFT JOIN analytics.dim_movies d
+ON f.movie_id = d.movie_id
+GROUP BY 1
+HAVING COUNT(*) >= 100
+ORDER BY media_rating DESC;
+📊 KPIs
+
+Key metrics generated:
+
+total movies
+
+total ratings
+
+total recommendations
+
+global rating average
+
+predicted rating average
+
+distinct users
+
+distinct movies rated
+
+💡 Insights
+
+Initial findings include:
+
+6.19M valid ratings
+
+1.28M recommendations
+
+105k movies in catalog
+
+strong skew towards ratings between 3.5 and 4.5
+
+Further insights are documented in:
+
+Docs/insights.md
+⚙️ Technologies Used
+
+Google BigQuery
+
+Google Cloud Storage
+
+SQL
+
+Git / GitHub
+
+MovieLens dataset
+
+📜 License
+
+The dataset is distributed under the MovieLens research license.
+See the original dataset documentation for full license terms.
+
+🚀 Future Improvements
+
+Possible next steps:
+
+dashboard visualization (Metabase / Looker Studio)
+
+recommendation model evaluation
+
+genre-level analysis
+
+user clustering analysis
