@@ -1,35 +1,35 @@
-🎬 MovieLens Analytics Pipeline (BigQuery)
+# 🎬 MovieLens Analytics Pipeline (BigQuery)
 
-End-to-end data analytics pipeline built using the MovieLens Beliefs Dataset, ingesting raw CSV data into Google Cloud Storage, transforming it with BigQuery SQL, and producing analytical tables for recommendation system exploration.
+End-to-end data analytics pipeline built using the **MovieLens Beliefs Dataset**, ingesting raw CSV data into **Google Cloud Storage**, transforming it with **BigQuery SQL**, and producing analytical tables for recommendation system exploration.
 
-The project demonstrates how to design a modern analytics pipeline including raw ingestion, transformation, validation, exploratory analysis and KPI generation.
+This project demonstrates how to design a modern analytics pipeline including **raw ingestion, transformation, validation, exploratory analysis, and KPI generation**.
 
-📊 Dataset
+## 📊 Dataset
 
-This project uses the MovieLens Beliefs Dataset, released by the GroupLens Research Group (University of Minnesota).
+This project uses the **MovieLens Beliefs Dataset**, released by the **GroupLens Research Group (University of Minnesota)**.
 
 The dataset contains:
 
-user ratings
+- user ratings
+- recommendation system predictions
+- belief elicitation data (expected ratings for unseen movies)
 
-recommendation system predictions
+Users are anonymized and represented only by `userId`.
 
-belief elicitation data (expected ratings for unseen movies)
-
-Users are anonymized and represented only by userId.
-
-Source:
+**Source:**  
 http://grouplens.org/datasets/
 
-Citation:
+**Citation:**  
+Aridor, G., Goncalves, D., Kong, R., Culver, D., Konstan, J. (2024).  
+*The MovieLens Beliefs Dataset: Collecting Pre-Choice Data for Online Recommender Systems.*
 
-Aridor, G., Goncalves, D., Kong, R., Culver, D., Konstan, J. (2024)
-The MovieLens Beliefs Dataset: Collecting Pre-Choice Data for Online Recommender Systems.
+---
 
-🏗 Architecture
+## 🏗 Architecture
 
-The pipeline follows a raw → analytics transformation model.
+The pipeline follows a **raw → analytics** transformation model.
 
+```text
 CSV Dataset
     │
     ▼
@@ -90,16 +90,13 @@ Large CSV files are excluded from the repository due to GitHub size limits.
 The analytics layer uses a star schema.
 
 Dimension
-
 dim_movies
-
 column	description
 movie_id	unique movie identifier
 titulo	movie title
 generos	genre list
 ano_lancamento	release year
 Fact Tables
-
 fact_ratings
 
 Contains historical user ratings.
@@ -109,7 +106,6 @@ user_id	user identifier
 movie_id	movie identifier
 rating	rating value
 rating_timestamp	rating timestamp
-
 fact_recommendations
 
 Contains recommendation system predictions.
@@ -157,7 +153,7 @@ SELECT
   ROUND(AVG(f.rating), 2) AS media_rating
 FROM analytics.fact_ratings f
 LEFT JOIN analytics.dim_movies d
-ON f.movie_id = d.movie_id
+  ON f.movie_id = d.movie_id
 GROUP BY 1
 HAVING COUNT(*) >= 100
 ORDER BY media_rating DESC;
