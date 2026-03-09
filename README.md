@@ -1,56 +1,63 @@
-🎬 MovieLens Analytics Pipeline (BigQuery)
+# MovieLens Analytics Pipeline (BigQuery)
 
-End-to-end data analytics pipeline built using the MovieLens Beliefs Dataset, ingesting raw CSV data into Google Cloud Storage, transforming it with BigQuery SQL, and producing analytical tables for recommendation system exploration.
+This project implements an end-to-end data analytics pipeline using the **MovieLens Beliefs Dataset**.  
+Raw CSV files are ingested into **Google Cloud Storage**, processed in **BigQuery**, and transformed into analytical tables used for exploratory analysis and KPI generation.
 
-The project demonstrates how to design a modern analytics pipeline including raw ingestion, transformation, validation, exploratory analysis and KPI generation.
+The goal of the project is to demonstrate how to structure a **modern analytics workflow**, including:
 
-📊 Dataset
+- raw data ingestion
+- data transformation
+- analytical modeling
+- data validation
+- exploratory SQL analysis
 
-This project uses the MovieLens Beliefs Dataset, released by the GroupLens Research Group (University of Minnesota).
+---
 
-The dataset contains:
+# Dataset
 
-user ratings
+This project uses the **MovieLens Beliefs Dataset**, provided by the **GroupLens Research Group (University of Minnesota)**.
 
-recommendation system predictions
+The dataset includes:
 
-belief elicitation data (expected ratings for unseen movies)
+- historical movie ratings
+- recommendation system predictions
+- belief elicitation data (expected ratings for unseen movies)
 
-Users are anonymized and represented only by userId.
+Users are anonymized and represented only by a unique `userId`.
 
-Source:
+Source  
 http://grouplens.org/datasets/
 
-Citation:
+Citation  
 
-Aridor, G., Goncalves, D., Kong, R., Culver, D., Konstan, J. (2024)
-The MovieLens Beliefs Dataset: Collecting Pre-Choice Data for Online Recommender Systems.
+Aridor, G., Goncalves, D., Kong, R., Culver, D., Konstan, J. (2024).  
+*The MovieLens Beliefs Dataset: Collecting Pre-Choice Data for Online Recommender Systems.*
 
-🏗 Architecture
+---
 
-The pipeline follows a raw → analytics transformation model.
+# Architecture
+
+The data pipeline follows a **raw → analytics** transformation approach.
 
 CSV Dataset
-    │
-    ▼
+↓
 Google Cloud Storage
-    │
-    ▼
-BigQuery RAW Layer
-    │
-    ▼
-BigQuery Analytics Layer
-    │
-    ├── dim_movies
-    ├── fact_ratings
-    └── fact_recommendations
-    │
-    ▼
-SQL Analysis
+↓
+BigQuery Raw Tables
+↓
+BigQuery Analytics Tables
+↓
+Exploratory SQL Analysis
 
-Raw CSV files are ingested as external tables, then transformed into typed analytical tables.
 
-📂 Project Structure
+
+Raw CSV files are first ingested as external tables and then transformed into typed analytical tables optimized for querying.
+
+---
+
+## Project Structure
+
+```
 bigquery-movie-analytics
 │
 ├── SQL
@@ -75,150 +82,110 @@ bigquery-movie-analytics
 ├── Docs
 │   └── insights.md
 │
-├── Images
-│
 ├── data_release
 │   └── README.txt
 │
 ├── .gitignore
 └── README.md
+```
+Large CSV files are excluded from the repository due to GitHub size limitations.
 
-Large CSV files are excluded from the repository due to GitHub size limits.
+---
 
-🧱 Data Model
+# Data Model
 
-The analytics layer uses a star schema.
+The analytics layer follows a **star schema**.
 
-Dimension
+## Dimension Table
 
-dim_movies
+**dim_movies**
 
-column	description
-movie_id	unique movie identifier
-titulo	movie title
-generos	genre list
-ano_lancamento	release year
-Fact Tables
+| column | description |
+|------|-------------|
+| movie_id | unique movie identifier |
+| titulo | movie title |
+| generos | genre list |
+| ano_lancamento | release year |
 
-fact_ratings
+---
 
-Contains historical user ratings.
+## Fact Tables
 
-column	description
-user_id	user identifier
-movie_id	movie identifier
-rating	rating value
-rating_timestamp	rating timestamp
+### fact_ratings
 
-fact_recommendations
+| column | description |
+|------|-------------|
+| user_id | user identifier |
+| movie_id | movie identifier |
+| rating | rating value |
+| rating_timestamp | rating timestamp |
 
-Contains recommendation system predictions.
+### fact_recommendations
 
-column	description
-user_id	user identifier
-movie_id	movie identifier
-predicted_rating	predicted rating
-recommendation_timestamp	timestamp of recommendation
-🔎 Data Validation
+| column | description |
+|------|-------------|
+| user_id | user identifier |
+| movie_id | movie identifier |
+| predicted_rating | predicted rating |
+| recommendation_timestamp | recommendation timestamp |
 
-Validation queries ensure data consistency:
+---
 
-null checks
+# Data Validation
 
-dataset size validation
+Validation queries were created to verify dataset consistency, including:
 
-foreign key validation between facts and dimensions
+- null value checks
+- dataset size validation
+- referential integrity between fact tables and dimensions
 
 Example finding:
-
 ratings without corresponding movie in dim_movies: 30,600
 
 This indicates potential inconsistencies between the ratings dataset and the movie catalog.
 
-📈 Exploratory Analysis
+---
 
-The project includes exploratory queries such as:
+# Exploratory Analysis
 
-rating distribution
+The project includes SQL queries for exploratory analysis such as:
 
-most rated movies
-
-highest average rated movies
-
-recommendation frequency analysis
-
-predicted rating distribution
+- rating distribution
+- most rated movies
+- highest average rated movies
+- recommendation frequency
+- predicted rating distribution
 
 Example query:
 
+```sql
 SELECT
   d.titulo,
-  COUNT(*) AS qtd_avaliacoes,
-  ROUND(AVG(f.rating), 2) AS media_rating
+  COUNT(*) AS total_ratings,
+  ROUND(AVG(f.rating),2) AS avg_rating
 FROM analytics.fact_ratings f
 LEFT JOIN analytics.dim_movies d
-ON f.movie_id = d.movie_id
+  ON f.movie_id = d.movie_id
 GROUP BY 1
 HAVING COUNT(*) >= 100
-ORDER BY media_rating DESC;
-📊 KPIs
+ORDER BY avg_rating DESC;
+```
+## Key Metrics
 
-Key metrics generated:
+- Movies: **105,071**
+- Ratings: **6.19 million**
+- Recommendations: **1.28 million**
 
-total movies
+Ratings are distributed on a **0.5 to 5.0 scale**, with a concentration between **3.5 and 4.5**.
 
-total ratings
+Further insights are available in:
 
-total recommendations
+`Docs/insights.md`
 
-global rating average
+## Technologies Used
 
-predicted rating average
-
-distinct users
-
-distinct movies rated
-
-💡 Insights
-
-Initial findings include:
-
-6.19M valid ratings
-
-1.28M recommendations
-
-105k movies in catalog
-
-strong skew towards ratings between 3.5 and 4.5
-
-Further insights are documented in:
-
-Docs/insights.md
-⚙️ Technologies Used
-
-Google BigQuery
-
-Google Cloud Storage
-
-SQL
-
-Git / GitHub
-
-MovieLens dataset
-
-📜 License
-
-The dataset is distributed under the MovieLens research license.
-See the original dataset documentation for full license terms.
-
-🚀 Future Improvements
-
-Possible next steps:
-
-dashboard visualization (Metabase / Looker Studio)
-
-recommendation model evaluation
-
-genre-level analysis
-
-user clustering analysis
+- Google BigQuery
+- Google Cloud Storage
+- SQL
+- Git / GitHub
+- MovieLens Dataset
