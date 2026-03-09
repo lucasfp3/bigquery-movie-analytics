@@ -1,0 +1,1 @@
+Durante a validação do modelo analítico, foram identificados 30.600 registros em fact_ratings sem correspondência com dim_movies. Isso sugere inconsistência entre a base de avaliações e o cadastro de filmes disponível em raw_movies. Já a fact_recommendations apresentou 100% de correspondência com a dimensão de filmes.
