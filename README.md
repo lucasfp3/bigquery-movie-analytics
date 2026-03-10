@@ -1,58 +1,60 @@
-# 🎬 MovieLens Analytics Pipeline (BigQuery)
+🎬 MovieLens Analytics Pipeline (BigQuery)
 
-End-to-end data analytics pipeline built using the **MovieLens Beliefs Dataset**, ingesting raw CSV data into **Google Cloud Storage**, transforming it with **BigQuery SQL**, and producing analytical tables for recommendation system exploration.
+End-to-end data analytics pipeline built using the MovieLens Beliefs Dataset, ingesting raw CSV data into Google Cloud Storage, transforming it with BigQuery SQL, and producing analytical tables for recommendation system exploration.
 
-This project demonstrates how to design a **modern analytics pipeline**, including:
+The project demonstrates how to design a modern analytics pipeline including raw ingestion, transformation, validation, exploratory analysis and KPI generation.
 
-- raw data ingestion
-- structured data transformation
-- analytical modeling
-- exploratory analysis
-- KPI generation
+📊 Dataset
 
----
+This project uses the MovieLens Beliefs Dataset, released by the GroupLens Research Group (University of Minnesota).
 
-# 📊 Dataset
+The dataset includes:
 
-This project uses the **MovieLens Beliefs Dataset**, released by the **GroupLens Research Group (University of Minnesota)**.
+user ratings
 
-The dataset contains:
+recommendation system predictions
 
-- user ratings
-- recommendation system predictions
-- belief elicitation data (expected ratings for unseen movies)
+belief elicitation data (expected ratings for unseen movies)
 
-Users are anonymized and represented only by `userId`.
+Users are anonymized and represented only by userId.
 
-**Source**  
+Source:
 http://grouplens.org/datasets/
 
-**Citation**
+Citation:
 
-Aridor, G., Goncalves, D., Kong, R., Culver, D., Konstan, J. (2024).  
-*The MovieLens Beliefs Dataset: Collecting Pre-Choice Data for Online Recommender Systems.*
+Aridor, G., Goncalves, D., Kong, R., Culver, D., Konstan, J. (2024)
+The MovieLens Beliefs Dataset: Collecting Pre-Choice Data for Online Recommender Systems.
+
+🏗 Architecture
+
+The pipeline follows a raw → analytics transformation model.
+
+CSV Dataset
+    │
+    ▼
+Google Cloud Storage
+    │
+    ▼
+BigQuery RAW Layer
+    │
+    ▼
+BigQuery Analytics Layer
+    │
+    ├── dim_movies
+    ├── fact_ratings
+    └── fact_recommendations
+    │
+    ▼
+SQL Analysis
+
+Raw CSV files are ingested as external tables, then transformed into typed analytical tables.
 
 ---
 
-# 🏗 Architecture
+## Project Structure
 
-The pipeline follows a **raw → analytics transformation model**.
-
-```mermaid
-flowchart TD
-A[CSV Dataset] --> B[Google Cloud Storage]
-B --> C[BigQuery RAW Layer]
-C --> D[BigQuery Analytics Layer]
-
-D --> E[dim_movies]
-D --> F[fact_ratings]
-D --> G[fact_recommendations]
-
-G --> H[Exploratory Analysis & KPIs]
-
-Raw CSV files are ingested as external tables, then transformed into typed analytical tables optimized for querying and analysis.
-
-📂 Project Structure
+```
 bigquery-movie-analytics
 │
 ├── SQL
@@ -77,28 +79,31 @@ bigquery-movie-analytics
 ├── Docs
 │   └── insights.md
 │
-├── Images
-│
 ├── data_release
 │   └── README.txt
 │
 ├── .gitignore
 └── README.md
+```
+Large CSV files are excluded from the repository due to GitHub size limitations.
 
-Large CSV files are excluded from the repository due to GitHub size limits.
+---
 
-🧱 Data Model
+# Data Model
 
-The analytics layer follows a star schema design.
+The analytics layer uses a star schema.
 
-Dimension Table
+Dimension
+
 dim_movies
+
 column	description
 movie_id	unique movie identifier
 titulo	movie title
 generos	genre list
 ano_lancamento	release year
 Fact Tables
+
 fact_ratings
 
 Contains historical user ratings.
@@ -108,6 +113,7 @@ user_id	user identifier
 movie_id	movie identifier
 rating	rating value
 rating_timestamp	rating timestamp
+
 fact_recommendations
 
 Contains recommendation system predictions.
@@ -116,26 +122,27 @@ column	description
 user_id	user identifier
 movie_id	movie identifier
 predicted_rating	predicted rating
-recommendation_timestamp	recommendation timestamp
+recommendation_timestamp	timestamp of recommendation
 🔎 Data Validation
 
-Validation queries ensure dataset consistency:
+Validation queries ensure data consistency:
 
 null checks
 
 dataset size validation
 
-referential validation between facts and dimensions
+foreign key validation between facts and dimensions
 
 Example finding:
-
 ratings without corresponding movie in dim_movies: 30,600
 
 This indicates potential inconsistencies between the ratings dataset and the movie catalog.
 
-📈 Exploratory Analysis
+---
 
-Exploratory queries included in the project:
+# Exploratory Analysis
+
+The project includes exploratory queries such as:
 
 rating distribution
 
@@ -143,16 +150,17 @@ most rated movies
 
 highest average rated movies
 
-recommendation frequency
+recommendation frequency analysis
 
 predicted rating distribution
 
 Example query:
 
+```sql
 SELECT
   d.titulo,
   COUNT(*) AS qtd_avaliacoes,
-  ROUND(AVG(f.rating),2) AS media_rating
+  ROUND(AVG(f.rating), 2) AS media_rating
 FROM analytics.fact_ratings f
 LEFT JOIN analytics.dim_movies d
   ON f.movie_id = d.movie_id
@@ -161,25 +169,35 @@ HAVING COUNT(*) >= 100
 ORDER BY media_rating DESC;
 📊 KPIs
 
-Key metrics derived from the dataset:
+Key metrics generated:
 
-Metric	Value
-Movies	105,071
-Ratings	6.19M
-Recommendations	1.28M
-Distinct Users	~45k
-Rating Scale	0.5 – 5.0
+total movies
+
+total ratings
+
+total recommendations
+
+global rating average
+
+predicted rating average
+
+distinct users
+
+distinct movies rated
+
 💡 Insights
 
 Initial findings include:
 
-strong skew toward ratings between 3.5 and 4.5
+6.19M valid ratings
 
-recommendation predictions frequently clustered near 5.0
+1.28M recommendations
 
-long-tail distribution of movie ratings
+105k movies in catalog
 
-Detailed exploration available in:
+strong skew towards ratings between 3.5 and 4.5
+
+Further insights are documented in:
 
 Docs/insights.md
 ⚙️ Technologies Used
@@ -201,12 +219,12 @@ See the original dataset documentation for full license terms.
 
 🚀 Future Improvements
 
-Potential extensions for the project:
+Possible next steps:
 
-BI dashboard (Looker Studio / Metabase)
+dashboard visualization (Metabase / Looker Studio)
 
-recommendation system evaluation
+recommendation model evaluation
 
-genre-level rating analysis
+genre-level analysis
 
-user clustering and segmentation
+user clustering analysis
