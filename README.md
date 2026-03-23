@@ -105,13 +105,14 @@ The analytics layer uses a star schema.
 - ano_lancamento
 
 **Fact Tables**
-fact_ratings
+
+*fact_ratings*
 - user_id
 - movie_id
 - rating
 - rating_timestamp
 
-fact_recommendations
+*fact_recommendations*
 - user_id
 - movie_id
 - predicted_rating
