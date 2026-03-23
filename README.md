@@ -30,6 +30,7 @@ The MovieLens Beliefs Dataset: Collecting Pre-Choice Data for Online Recommender
 
 ## 🏗 Architecture
 
+```text
 The pipeline follows a raw → analytics transformation model.
 
 CSV Dataset
@@ -49,6 +50,7 @@ BigQuery Analytics Layer
     │
     ▼
 SQL Analysis
+```
 
 Raw CSV files are ingested as external tables, then transformed into typed analytical tables.
 
